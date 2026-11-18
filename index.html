@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affixes — Interactive Poster | Ensieh Safariyan</title>
+<style>
+:root{
+  --navy:#0e1330; --navy2:#161d42; --teal:#2dd4bf; --purple:#a78bfa;
+  --pink:#f472b6; --amber:#fbbf24; --green:#34d399; --red:#f87171;
+  --ink:#e8ecf8; --dim:#9aa3c0;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--navy);color:var(--ink);overflow-x:hidden;}
+#progress{position:fixed;top:0;left:0;height:5px;background:linear-gradient(90deg,var(--teal),var(--purple),var(--pink));width:0;z-index:99;transition:width .2s;}
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.stars span{position:absolute;border-radius:50%;background:#fff;opacity:.5;animation:tw 3s infinite alternate;}
+@keyframes tw{from{opacity:.1}to{opacity:.8}}
+
+/* ---------- COVER ---------- */
+.cover{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;position:relative;z-index:1;background:radial-gradient(circle at 20% 20%,rgba(167,139,250,.15),transparent 40%),radial-gradient(circle at 80% 70%,rgba(45,212,191,.15),transparent 40%);}
+.cover h1{font-size:clamp(4rem,14vw,10rem);letter-spacing:.05em;background:linear-gradient(90deg,var(--teal),var(--purple),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;animation:float 4s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+.cover .sub{font-size:clamp(1.1rem,3vw,1.8rem);color:var(--dim);margin-top:.5rem;}
+.cover .inst{margin-top:3rem;font-size:clamp(1.2rem,3vw,1.9rem);color:var(--ink);border:2px solid var(--teal);padding:.7rem 2.4rem;border-radius:50px;box-shadow:0 0 30px rgba(45,212,191,.35);}
+.scrollHint{position:absolute;bottom:2rem;font-size:2rem;color:var(--teal);animation:bounce 1.5s infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(12px)}}
+
+/* ---------- SECTIONS ---------- */
+section{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:5rem 1.2rem;}
+.badge{display:inline-block;background:rgba(45,212,191,.15);border:1px solid var(--teal);color:var(--teal);padding:.3rem 1rem;border-radius:30px;font-size:.85rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:1rem;}
+h2{font-size:clamp(2rem,5vw,3rem);margin-bottom:.6rem;}
+h2 .hl{background:linear-gradient(90deg,var(--teal),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent;}
+p.lead{color:var(--dim);font-size:1.1rem;max-width:640px;margin-bottom:2rem;}
+
+/* flip cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.2rem;margin-top:1.5rem;}
+.flip{perspective:1200px;height:230px;cursor:pointer;}
+.flip-inner{position:relative;width:100%;height:100%;transition:transform .7s;transform-style:preserve-3d;}
+.flip.on .flip-inner{transform:rotateY(180deg);}
+.face{position:absolute;inset:0;backface-visibility:hidden;border-radius:20px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:1.2rem;text-align:center;}
+.face.front{background:linear-gradient(145deg,var(--navy2),#1c2450);border:1px solid rgba(255,255,255,.12);font-size:2.6rem;box-shadow:0 10px 30px rgba(0,0,0,.4);}
+.face.front small{font-size:.95rem;color:var(--dim);margin-top:.6rem;}
+.face.back{background:linear-gradient(145deg,var(--teal),#0d9488);color:#04241f;transform:rotateY(180deg);font-size:1.15rem;font-weight:600;}
+.face.back small{font-weight:400;opacity:.85;margin-top:.5rem;}
+.tap{font-size:.75rem;color:var(--dim);letter-spacing:.2em;margin-top:1rem;text-transform:uppercase;}
+
+/* word builder */
+.builder{display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;margin:1.5rem 0;}
+.chip{padding:.55rem 1.1rem;border-radius:14px;border:1px solid rgba(255,255,255,.2);background:var(--navy2);cursor:pointer;font-size:1.05rem;transition:.25s;user-select:none;}
+.chip:hover{transform:translateY(-3px);border-color:var(--teal);}
+.chip.sel{background:var(--teal);color:#04241f;font-weight:700;box-shadow:0 0 20px rgba(45,212,191,.5);}
+.resultBox{margin-top:1.2rem;min-height:90px;border:2px dashed rgba(255,255,255,.25);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-wrap:wrap;gap:.4rem;padding:1rem;}
+.resultBox .stem{color:var(--ink);font-weight:700;}
+.resultBox .affix{color:var(--pink);font-weight:800;}
+.resultBox .pos{color:var(--amber);font-size:1rem;}
+.fb{font-size:1rem;margin-top:.6rem;min-height:1.4em;}
+.fb.ok{color:var(--green);} .fb.no{color:var(--red);}
+
+/* mirror ful/less */
+.mirror{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem;}
+@media(max-width:600px){.mirror{grid-template-columns:1fr;}}
+.mcol{border-radius:20px;padding:1.4rem;}
+.mcol.ful{background:linear-gradient(160deg,rgba(52,211,153,.18),transparent);border:1px solid var(--green);}
+.mcol.less{background:linear-gradient(160deg,rgba(248,113,113,.18),transparent);border:1px solid var(--red);}
+.mcol h3{margin-bottom:.8rem;font-size:1.4rem;}
+.mword{padding:.5rem .9rem;border-radius:12px;background:rgba(255,255,255,.06);margin:.45rem 0;cursor:pointer;font-size:1.1rem;display:flex;justify-content:space-between;transition:.25s;}
+.mword:hover{transform:scale(1.03);}
+.mword b{color:var(--amber);}
+.mword .gloss{display:none;color:var(--dim);font-size:.9rem;}
+.mword.open .gloss{display:inline;}
+
+/* sort game */
+.sortStage{margin-top:1.5rem;}
+.tokenRow{display:flex;flex-wrap:wrap;gap:.7rem;margin-bottom:1.5rem;min-height:60px;}
+.token{padding:.6rem 1.2rem;border-radius:40px;background:linear-gradient(145deg,#232b5c,#1a2148);border:1px solid rgba(255,255,255,.2);cursor:grab;font-size:1.15rem;font-weight:600;transition:.2s;user-select:none;}
+.token:hover{box-shadow:0 0 18px rgba(167,139,250,.5);transform:scale(1.05);}
+.token.done{opacity:.35;pointer-events:none;text-decoration:line-through;}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+@media(max-width:600px){.bins{grid-template-columns:1fr;}}
+.bin{border-radius:20px;min-height:150px;padding:1rem;border:2px dashed rgba(255,255,255,.25);transition:.2s;}
+.bin.neg{background:rgba(248,113,113,.08);} .bin.pos{background:rgba(52,211,153,.08);}
+.bin.over{border-color:var(--amber);transform:scale(1.02);}
+.bin h3{text-align:center;margin-bottom:.6rem;pointer-events:none;}
+.bin .slot{display:flex;flex-wrap:wrap;gap:.5rem;pointer-events:none;}
+.badgeMini{padding:.3rem .8rem;border-radius:30px;font-size:.95rem;}
+.badgeMini.neg{background:var(--red);color:#2b0606;font-weight:700;}
+.badgeMini.pos{background:var(--green);color:#022c22;font-weight:700;}
+.scoreBar{margin-top:1.2rem;font-size:1.2rem;}
+
+/* quiz */
+.q{margin:1.6rem 0;padding:1.3rem;border-radius:18px;background:var(--navy2);border:1px solid rgba(255,255,255,.1);}
+.q .qt{font-size:1.2rem;font-weight:600;margin-bottom:.9rem;}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.6rem;}
+.opt{padding:.65rem 1rem;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.15);cursor:pointer;transition:.2s;font-size:1.05rem;}
+.opt:hover{border-color:var(--teal);transform:translateY(-2px);}
+.opt.correct{background:rgba(52,211,153,.25);border-color:var(--green);}
+.opt.wrong{background:rgba(248,113,113,.25);border-color:var(--red);animation:shake .4s;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.finalScore{margin-top:2rem;text-align:center;font-size:1.6rem;display:none;}
+
+/* confetti */
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:98;}
+
+footer{position:relative;z-index:1;text-align:center;padding:3rem 1rem;color:var(--dim);}
+footer b{color:var(--teal);}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<canvas id="confetti"></canvas>
+<div class="stars" id="stars"></div>
+
+<!-- ================= COVER ================= -->
+<div class="cover">
+  <h1>Affixes</h1>
+  <div class="sub">Prefixes &amp; Suffixes — Interactive English Poster</div>
+  <div class="inst">👩‍🏫 Instructor: <b>Ensieh Safariyan</b></div>
+  <div class="scrollHint">▼ scroll to explore</div>
+</div>
+
+<!-- ================= 1. WHAT IS AN AFFIX ================= -->
+<section id="s1">
+  <span class="badge">Section 1</span>
+  <h2>What is an <span class="hl">Affix</span>?</h2>
+  <p class="lead">An affix is a group of letters added to a root word. It can change the <b style="color:var(--teal)">meaning</b> or the <b style="color:var(--pink)">part of speech</b>. Tap the cards to flip them!</p>
+  <div class="cards">
+    <div class="flip" onclick="this.classList.toggle('on')"><div class="flip-inner">
+      <div class="face front">➕ <b>un-</b><small>PREFIX — goes at the BEGINNING</small></div>
+      <div class="face back">un + happy = unhappy<small>changes the MEANING (not happy)</small></div>
+    </div></div>
+    <div class="flip" onclick="this.classList.toggle('on')"><div class="flip-inner">
+      <div class="face front">➖ <b>-er</b><small>SUFFIX — goes at the END</small></div>
+      <div class="face back">teach + er = teacher<small>changes the WORD CLASS (verb → noun)</small></div>
+    </div></div>
+    <div class="flip" onclick="this.classList.toggle('on')"><div class="flip-inner">
+      <div class="face front">🔑 <b>Root word</b><small>the base word</small></div>
+      <div class="face back">root + affix = new word<small>friend + ship = friendship</small></div>
+    </div></div>
+  </div>
+  <div class="tap">↻ tap any card to flip</div>
+</section>
+
+<!-- ================= 2. NOUN MAKERS ================= -->
+<section id="s2">
+  <span class="badge">Section 2 · Activity</span>
+  <h2>🏷️ <span class="hl">Noun</span> Makers</h2>
+  <p class="lead">Pick a root word and a suffix to build a noun. Can you find all the correct matches?</p>
+  <div class="builder" id="nounStems"></div>
+  <div style="font-size:1.6rem;text-align:center;">➕</div>
+  <div class="builder" id="nounSufs"></div>
+  <div class="resultBox" id="nounRes"><span style="color:var(--dim);font-size:1rem;">your new word will appear here…</span></div>
+  <div class="fb" id="nounFb"></div>
+</section>
+
+<!-- ================= 3. ADJECTIVE MAKERS + MIRROR ================= -->
+<section id="s3">
+  <span class="badge">Section 3</span>
+  <h2>🎨 <span class="hl">Adjective</span> Makers</h2>
+  <p class="lead"><b>-ful</b> = full of · <b>-less</b> = without. They are mirrors! Tap the pairs below to reveal the meaning.</p>
+  <div class="mirror" id="mirrorBox"></div>
+</section>
+
+<!-- ================= 4. VERB MAKERS ================= -->
+<section id="s4">
+  <span class="badge">Section 4 · Activity</span>
+  <h2>⚡ <span class="hl">Verb</span> Makers</h2>
+  <p class="lead">Choose the right verb-making suffix: <b>-ize</b>, <b>-ify</b> or <b>-en</b>. Click your answer!</p>
+  <div id="verbQuiz"></div>
+</section>
+
+<!-- ================= 5. NEGATIVE vs POSITIVE ================= -->
+<section id="s5">
+  <span class="badge">Section 5 · Game</span>
+  <h2>⚔️ <span class="hl">Negative</span> vs <span class="hl" style="background:linear-gradient(90deg,var(--green),var(--teal));-webkit-background-clip:text;background-clip:text;">Positive</span> Prefixes</h2>
+  <p class="lead">Drag each word into the correct box — or just tap the word and then tap a box!</p>
+  <div class="sortStage">
+    <div class="tokenRow" id="tokenRow"></div>
+    <div class="bins">
+      <div class="bin neg" data-type="neg"><h3>🚫 NEGATIVE prefix</h3><div class="slot" id="slotNeg"></div></div>
+      <div class="bin pos" data-type="pos"><h3>✅ POSITIVE / REBUILDING prefix</h3><div class="slot" id="slotPos"></div></div>
+    </div>
+    <div class="scoreBar">Score: <b id="sortScore" style="color:var(--amber)">0</b> / 10</div>
+  </div>
+</section>
+
+<!-- ================= 6. IN -> IM/IL/IR ================= -->
+<section id="s6">
+  <span class="badge">Section 6 · Quiz</span>
+  <h2>🧬 One rule, four shapes: <span class="hl">in- → im- / il- / ir-</span></h2>
+  <p class="lead">The prefix <b>in-</b> changes its shape to make pronunciation easier. Choose the correct form!</p>
+  <div id="ruleQuiz"></div>
+</section>
+
+<!-- ================= 7. FINAL CHALLENGE ================= -->
+<section id="s7">
+  <span class="badge">Final Challenge</span>
+  <h2>🏆 <span class="hl">Affix Master</span> Quiz</h2>
+  <p class="lead">Answer all questions to earn your title. Wrong answers shake — correct ones sparkle!</p>
+  <div id="finalQuiz"></div>
+  <div class="finalScore" id="finalScore"></div>
+</section>
+
+<footer>Made with ❤ for my students · <b>Affixes Poster</b> · Instructor: <b>Ensieh Safariyan</b></footer>
+
+<script>
+/* ---------- stars bg ---------- */
+(function(){const c=document.getElementById('stars');for(let i=0;i<70;i++){const s=document.createElement('span');const sz=Math.random()*2.5+1;s.style.width=s.style.height=sz+'px';s.style.left=Math.random()*100+'vw';s.style.top=Math.random()*100+'vh';s.style.animationDelay=(Math.random()*3)+'s';c.appendChild(s);}})();
+
+/* ---------- progress bar ---------- */
+window.addEventListener('scroll',()=>{const h=document.documentElement;const p=h.scrollTop/(h.scrollHeight-h.clientHeight)*100;document.getElementById('progress').style.width=p+'%';});
+
+/* ---------- confetti ---------- */
+const cv=document.getElementById('confetti'),cx=cv.getContext('2d');let parts=[];
+function resize(){cv.width=innerWidth;cv.height=innerHeight;}resize();window.addEventListener('resize',resize);
+function burst(x,y){const cols=['#2dd4bf','#a78bfa','#f472b6','#fbbf24','#34d399'];for(let i=0;i<60;i++){parts.push({x:x,y:y,vx:(Math.random()-.5)*12,vy:Math.random()*-11-3,g:.35,s:Math.random()*6+3,c:cols[Math.floor(Math.random()*cols.length)],l:80});}}
+(function loop(){cx.clearRect(0,0,cv.width,cv.height);parts=parts.filter(p=>p.l>0);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.l--;cx.globalAlpha=p.l/80;cx.fillStyle=p.c;cx.fillRect(p.x,p.y,p.s,p.s);});requestAnimationFrame(loop);})();
+function yay(){burst(innerWidth/2,innerHeight/3);}
+
+/* ---------- SECTION 2: noun builder ---------- */
+const nounData={educate:'-tion',happy:'-ness',govern:'-ment',create:'-ity',lead:'-ship',differ:'-ence',art:'-ist'};
+const nounStems=Object.keys(nounData),nounSufs=['-tion','-ness','-ment','-ity','-ship','-ence','-ist'];
+let stemSel=null,sufSel=null;
+function buildChips(el,items,cb){items.forEach(t=>{const d=document.createElement('div');d.className='chip';d.textContent=t;d.onclick=()=>{el.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));d.classList.add('sel');cb(t);checkNoun();};el.appendChild(d);});}
+function checkNoun(){const res=document.getElementById('nounRes'),fb=document.getElementById('nounFb');if(!stemSel||!sufSel)return;const map={educate:'education',happy:'happiness',govern:'government',create:'creativity',lead:'leadership',differ:'difference',art:'artist'};
+ if(nounData[stemSel]===sufSel){res.innerHTML='<span class="stem">'+stemSel+'</span><span class="affix">'+sufSel+'</span><span>=</span><span class="stem">'+map[stemSel]+'</span><span class="pos">← NOUN 🏷️</span>';fb.textContent='Correct! '+map[stemSel]+' is a noun.';fb.className='fb ok';yay();}else{res.innerHTML='<span class="stem">'+stemSel+'</span><span class="affix">'+sufSel+'</span><span>=</span><span style="color:var(--red)">❌</span>';fb.textContent='Not quite — try a different suffix!';fb.className='fb no';}}
+buildChips(document.getElementById('nounStems'),nounStems,t=>stemSel=t);
+buildChips(document.getElementById('nounSufs'),nounSufs,t=>sufSel=t);
+
+/* ---------- SECTION 3: mirror ---------- */
+const mirror=[['hopeful','full of hope','hopeless','without hope'],['careful','full of care','careless','without care'],['useful','full of use','useless','without use'],['painful','full of pain','painless','without pain'],['powerful','full of power','powerless','without power']];
+const mb=document.getElementById('mirrorBox');
+mb.innerHTML='<div class="mcol ful"><h3>😊 -ful (full of)</h3>'+mirror.map((m,i)=>'<div class="mword" onclick="this.classList.toggle(\'open\')"><span><b>'+m[0]+'</b> <span class="gloss">— '+m[1]+'</span></span><span>👆</span></div>').join('')+'</div>'+
+'<div class="mcol less"><h3>🙁 -less (without)</h3>'+mirror.map((m,i)=>'<div class="mword" onclick="this.classList.toggle(\'open\')"><span><b>'+m[2]+'</b> <span class="gloss">— '+m[3]+'</span></span><span>👆</span></div>').join('')+'</div>';
+
+/* ---------- quiz maker ---------- */
+function makeQuiz(elId,qs,onDone){const el=document.getElementById(elId);let score=0,answered=0;
+ qs.forEach((q,qi)=>{const div=document.createElement('div');div.className='q';
+  div.innerHTML='<div class="qt">'+(qi+1)+'. '+q.q+'</div>';
+  const grid=document.createElement('div');grid.className='opts';
+  q.opts.forEach(o=>{const b=document.createElement('div');b.className='opt';b.textContent=o;
+   b.onclick=()=>{if(div.dataset.done)return;div.dataset.done=1;answered++;
+     if(o===q.a){b.classList.add('correct');score++;burstAt(b);}else{b.classList.add('wrong');[...grid.children].find(x=>x.textContent===q.a).classList.add('correct');}
+     grid.querySelectorAll('.opt').forEach(x=>x.style.pointerEvents='none');
+     if(answered===qs.length&&onDone)onDone(score,qs.length);};
+   grid.appendChild(b);});
+  div.appendChild(grid);el.appendChild(div);});
+ function burstAt(elm){const r=elm.getBoundingClientRect();burst(r.left+r.width/2,r.top);}
+ return {getScore:()=>score};}
+
+/* ---------- SECTION 4: verb quiz ---------- */
+makeQuiz('verbQuiz',[
+ {q:'modern + ? = modernize',opts:['-ize','-ify','-en'],a:'-ize'},
+ {q:'simple + ? = simplify',opts:['-ize','-ify','-en'],a:'-ify'},
+ {q:'wide + ? = widen',opts:['-ize','-ify','-en'],a:'-en'},
+ {q:'beauty + ? = beautify',opts:['-ize','-ify','-en'],a:'-ify'}]);
+
+/* ---------- SECTION 5: sort game ---------- */
+const sortItems=[['unhappy','neg'],['disagree','neg'],['impossible','neg'],['illegal','neg'],['irregular','neg'],['nonsense','neg'],['antisocial','neg'],['invisible','neg'],['rewrite','pos'],['encourage','pos'],['overconfident','pos'],['empower','pos']].slice(0,10);
+// shuffle
+for(let i=sortItems.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sortItems[i],sortItems[j]]=[sortItems[j],sortItems[i]];}
+let sortScore=0,sortDone=0,armed=null;
+const row=document.getElementById('tokenRow');
+sortItems.forEach(it=>{const t=document.createElement('div');t.className='token';t.textContent=it[0];t.dataset.type=it[1];
+ t.onclick=()=>{if(t.classList.contains('done'))return;if(armed)armed.style.borderColor='';armed=t;t.style.borderColor='var(--amber)';};
+ row.appendChild(t);});
+document.querySelectorAll('.bin').forEach(bin=>{
+ bin.addEventListener('click',e=>{if(!armed)return;const ok=armed.dataset.type===bin.dataset.type;
+   if(ok){sortScore++;document.getElementById('sortScore').textContent=sortScore;
+     const tag=document.createElement('span');tag.className='badgeMini '+armed.dataset.type;
+     tag.textContent=(armed.dataset.type==='neg'?'🚫 ':'✅ ')+armed.textContent;
+     bin.querySelector('.slot').appendChild(tag);armed.classList.add('done');burstAt2(armed);armed=null;sortDone++;
+     if(sortDone===sortItems.length){const fb2=document.createElement('div');fb2.className='fb ok';fb2.style.fontSize='1.3rem';fb2.textContent=sortScore>=8?'🏆 Amazing! You are a Prefix Master!':'💪 Good job! Try again to get them all!';bin.parentElement.parentElement.appendChild(fb2);yay();}
+   }else{armed.style.borderColor='var(--red)';armed.style.animation='shake .4s';setTimeout(()=>{armed.style.animation='';},450);}});
+ bin.addEventListener('dragover',e=>e.preventDefault());
+ bin.addEventListener('dragenter',()=>bin.classList.add('over'));
+ bin.addEventListener('dragleave',()=>bin.classList.remove('over'));
+ bin.addEventListener('drop',e=>{e.preventDefault();bin.classList.remove('over');if(armed){bin.click();}});
+});
+document.querySelectorAll('.token').forEach(t=>{t.draggable=true;t.addEventListener('dragstart',()=>{armed=t;});});
+function burstAt2(elm){const r=elm.getBoundingClientRect();burst(r.left+r.width/2,r.top);}
+
+/* ---------- SECTION 6: in->im/il/ir ---------- */
+makeQuiz('ruleQuiz',[
+ {q:'___ + polite → ?',opts:['in-','im-','ir-'],a:'im-'},
+ {q:'___ + legal → ?',opts:['il-','in-','ir-'],a:'il-'},
+ {q:'___ + regular → ?',opts:['ir-','im-','il-'],a:'ir-'},
+ {q:'___ + correct → ?',opts:['in-','im-','il-'],a:'in-'},
+ {q:'___ + mobile → ?',opts:['im-','in-','il-'],a:'im-'}]);
+
+/* ---------- SECTION 7: final ---------- */
+makeQuiz('finalQuiz',[
+ {q:'"development" — which suffix made this noun?',opts:['-ment','-ful','-ize'],a:'-ment'},
+ {q:'Which word means "without hope"?',opts:['hopeful','hopeless','hoping'],a:'hopeless'},
+ {q:'dis + agree = disagree → dis- is a …',opts:['suffix · negative prefix','positive prefix','verb maker'],a:'suffix · negative prefix'},
+ {q:'Choose the negative prefix: ___possible',opts:['im-','re-','en-'],a:'im-'},
+ {q:'friend + ___ = friendship',opts:['-ship','-less','-ify'],a:'-ship'},
+ {q:'Which one has a POSITIVE/rebuilding prefix?',opts:['rewrite','unhappy','dishonest'],a:'rewrite'}],
+ (s,t)=>{const fs=document.getElementById('finalScore');fs.style.display='block';
+  const title=s===t?'🏆 AFFIX MASTER!':s>=4?'🌟 Great job!':'💪 Keep practicing!';
+  fs.innerHTML=title+'<br><span style="color:var(--amber)">'+s+' / '+t+'</span>';
+  if(s===t){let i=0;const iv=setInterval(()=>{yay();if(++i>3)clearInterval(iv);},500);}});
+</script>
+</body>
+</html>
